@@ -1,7 +1,7 @@
 use crate::drawing_system;
 
 use iced::widget::{Column, Row, Text, button, container};
-use iced::{Center, Element, Length};
+use iced::{Center, Color, Element, Length};
 
 use std::default::Default;
 
@@ -75,13 +75,24 @@ impl Lotto {
             cols.push(simulation);
         }
 
-        let to_be_shown = container(
+        let element: Element<'_, Message> = container(
             Column::from_vec(cols)
                 .push(button("Generate").on_press(Message::Generate))
                 .align_x(Center),
-        );
+        )
+        .center_x(Length::Fill)
+        .center_y(Length::Fill)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .into();
 
-        to_be_shown.center(Length::Fill).into()
+        #[cfg(debug_assertions)]
+        {
+            return element.explain(Color::BLACK);
+        }
+
+        #[allow(unreachable_code)]
+        return element;
     }
 
     fn visualize_drawn_balls(&self, no_simulation: usize) -> Element<'_, Message> {
