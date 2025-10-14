@@ -1,7 +1,7 @@
 use crate::drawing_system;
 
 use iced::widget::{Column, Row, Text, button, container};
-use iced::{Center, Color, Element, Length};
+use iced::{Center, Color, Element, Length, widget};
 
 use std::default::Default;
 
@@ -69,22 +69,19 @@ impl Lotto {
     }
 
     pub fn view(&self) -> Element<'_, Message> {
-        let mut cols = Vec::with_capacity(self.n_simulations);
+        let cols = widget::column![
+            self.visualize_simulations(),
+            button("Generate").on_press(Message::Generate)
+        ]
+        .spacing(10)
+        .align_x(Center);
 
-        for simulation in self.visualize_simulations() {
-            cols.push(simulation);
-        }
-
-        let element: Element<'_, Message> = container(
-            Column::from_vec(cols)
-                .push(button("Generate").on_press(Message::Generate))
-                .align_x(Center),
-        )
-        .center_x(Length::Fill)
-        .center_y(Length::Fill)
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .into();
+        let element: Element<'_, Message> = container(cols)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .into();
 
         #[cfg(debug_assertions)]
         {
@@ -96,27 +93,27 @@ impl Lotto {
     }
 
     fn visualize_drawn_balls(&self, no_simulation: usize) -> Element<'_, Message> {
-        let mut row = Vec::with_capacity(self.n_simulations);
+        let mut rows = Vec::with_capacity(self.n_simulations);
 
         if self.drawing_systems.is_empty() {
-            row.resize_with(self.n_draws, || Text::new(0).into());
+            rows.resize_with(self.n_draws, || Text::new(0).into());
         } else {
             for i in 0..self.n_draws {
-                row.push(Text::new(self.simulations[no_simulation][i]).into());
+                rows.push(Text::new(self.simulations[no_simulation][i]).into());
             }
         }
 
-        Row::from_vec(row).spacing(20).into()
+        Row::from_vec(rows).spacing(10).align_y(Center).into()
     }
 
-    fn visualize_simulations(&self) -> Vec<Element<'_, Message>> {
-        let mut rows = Vec::with_capacity(self.n_simulations);
+    fn visualize_simulations(&self) -> Element<'_, Message> {
+        let mut cols = Vec::with_capacity(self.n_simulations);
 
         for i in 0..self.n_simulations {
-            rows.push(self.visualize_drawn_balls(i));
+            cols.push(self.visualize_drawn_balls(i));
         }
 
-        rows
+        Column::from_vec(cols).into()
     }
 }
 
