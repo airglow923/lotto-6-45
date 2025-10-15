@@ -1,11 +1,12 @@
-mod drawing_system;
-mod lotto;
-
 use iced::{Size, Task, window};
 
 use std::default::Default;
 
 use lotto::Lotto;
+
+mod drawing_system;
+mod lotto;
+mod math;
 
 pub fn main() -> iced::Result {
     iced::application(Lotto::title, Lotto::update, Lotto::view)
