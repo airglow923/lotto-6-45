@@ -2,18 +2,22 @@ use iced::{Size, Task, window};
 
 use std::default::Default;
 
-use lotto::Lotto;
+use app::App;
 
+mod app;
+mod ball_input;
+mod color;
+mod combinations;
 mod drawing_system;
 mod lotto;
 mod math;
 
 pub fn main() -> iced::Result {
-    iced::application(Lotto::title, Lotto::update, Lotto::view)
+    iced::application(App::title, App::update, App::view)
         .window(window::Settings {
             size: Size::new(800.0, 600.0),
             position: window::Position::Centered,
             ..Default::default()
         })
-        .run_with(|| (Lotto::default(), Task::none()))
+        .run_with(|| (App::default(), Task::none()))
 }

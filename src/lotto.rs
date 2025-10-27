@@ -1,24 +1,27 @@
 use crate::drawing_system;
 
-use iced::widget::{Column, Row, Text, button, container};
+use iced::widget::text_input;
+use iced::widget::{button, container};
 use iced::{Center, Color, Element, Length, widget};
 
 use std::default::Default;
 
 use drawing_system::DrawingSystem;
 
-#[derive(Debug)]
-pub struct Lotto {
-    n_balls: usize,
-    n_draws: usize,
-    n_simulations: usize,
-    drawing_systems: Vec<DrawingSystem>,
-    simulations: Vec<Vec<usize>>,
+#[derive(Debug, Clone)]
+pub enum MessageLotto {
+    Generate,
+    ChangedBallFirst(String),
+    ChangedBallSecond(String),
+    ChangedBallThird(String),
+    ChangedBallFourth(String),
+    ChangedBallFifth(String),
+    ChangedBallSixth(String),
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum Message {
-    Generate,
+#[derive(Debug)]
+pub struct Lotto {
+    ball_inputs: [String; 6],
 }
 
 impl Lotto {
@@ -35,48 +38,37 @@ impl Lotto {
         });
 
         Self {
-            n_balls,
-            n_draws,
-            n_simulations,
-            drawing_systems,
-            simulations,
+            ball_inputs: std::array::from_fn(|_| String::new()),
         }
     }
 
-    fn renew(&mut self) {
-        for i in 0..self.n_simulations {
-            self.drawing_systems[i] = DrawingSystem::new(self.n_balls);
-            self.drawing_systems[i].shuffle();
-        }
-
-        for i in 0..self.n_simulations {
-            for j in 0..self.n_draws {
-                self.simulations[i][j] = self.drawing_systems[i].draw();
-            }
-
-            self.simulations[i].sort();
+    pub fn update(&mut self, message: MessageLotto) {
+        match message {
+            MessageLotto::Generate => (),
+            MessageLotto::ChangedBallFirst(content) => self.ball_inputs[0] = content,
+            MessageLotto::ChangedBallSecond(content) => self.ball_inputs[1] = content,
+            MessageLotto::ChangedBallThird(content) => self.ball_inputs[2] = content,
+            MessageLotto::ChangedBallFourth(content) => self.ball_inputs[3] = content,
+            MessageLotto::ChangedBallFifth(content) => self.ball_inputs[4] = content,
+            MessageLotto::ChangedBallSixth(content) => self.ball_inputs[5] = content,
         }
     }
 
-    pub fn title(&self) -> String {
-        String::from("Lotto 6/45 Simulation")
-    }
+    pub fn view(&self) -> Element<'_, MessageLotto> {
+        let rows = widget::row![
+            text_input("", &self.ball_inputs[0]).on_input(MessageLotto::ChangedBallFirst),
+            text_input("", &self.ball_inputs[1]).on_input(MessageLotto::ChangedBallSecond),
+            text_input("", &self.ball_inputs[2]).on_input(MessageLotto::ChangedBallThird),
+            text_input("", &self.ball_inputs[3]).on_input(MessageLotto::ChangedBallFourth),
+            text_input("", &self.ball_inputs[4]).on_input(MessageLotto::ChangedBallFifth),
+            text_input("", &self.ball_inputs[5]).on_input(MessageLotto::ChangedBallSixth),
+        ];
 
-    pub fn update(&mut self, msg: Message) {
-        match msg {
-            Message::Generate => self.renew(),
-        }
-    }
+        let cols = widget::column![rows, button("Generate").on_press(MessageLotto::Generate),]
+            .spacing(10)
+            .align_x(Center);
 
-    pub fn view(&self) -> Element<'_, Message> {
-        let cols = widget::column![
-            self.visualize_simulations(),
-            button("Generate").on_press(Message::Generate)
-        ]
-        .spacing(10)
-        .align_x(Center);
-
-        let element: Element<'_, Message> = container(cols)
+        let element: Element<'_, MessageLotto> = container(cols)
             .center_x(Length::Fill)
             .center_y(Length::Fill)
             .width(Length::Fill)
@@ -92,28 +84,8 @@ impl Lotto {
         return element;
     }
 
-    fn visualize_drawn_balls(&self, no_simulation: usize) -> Element<'_, Message> {
-        let mut rows = Vec::with_capacity(self.n_simulations);
-
-        if self.drawing_systems.is_empty() {
-            rows.resize_with(self.n_draws, || Text::new(0).into());
-        } else {
-            for i in 0..self.n_draws {
-                rows.push(Text::new(self.simulations[no_simulation][i]).into());
-            }
-        }
-
-        Row::from_vec(rows).spacing(10).align_y(Center).into()
-    }
-
-    fn visualize_simulations(&self) -> Element<'_, Message> {
-        let mut cols = Vec::with_capacity(self.n_simulations);
-
-        for i in 0..self.n_simulations {
-            cols.push(self.visualize_drawn_balls(i));
-        }
-
-        Column::from_vec(cols).into()
+    pub fn get_ball_inputs(&self) -> &[String; 6] {
+        &self.ball_inputs
     }
 }
 

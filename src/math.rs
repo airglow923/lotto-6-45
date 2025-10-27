@@ -27,7 +27,7 @@ pub fn binomial_coefficient(numerator: usize, denominator: usize) -> usize {
     res
 }
 
-pub fn combinations<T: Default + Copy>(
+pub fn combinations<T: Default + Copy + PartialEq>(
     set: &[T],
     set_fixed: Option<&[T]>,
     n_seq: usize,
@@ -49,7 +49,23 @@ pub fn combinations<T: Default + Copy>(
     let mut combs: Vec<Vec<T>> = Vec::new();
     combs.reserve_exact(n_combs);
 
-    for set_comb in set.into_iter().combinations(n_rand) {
+    let set_filtered = match set_fixed {
+        Some(x) => set
+            .iter()
+            .filter(|e| {
+                for i in x {
+                    if i == *e {
+                        return false;
+                    }
+                }
+
+                true
+            })
+            .collect::<Vec<_>>(),
+        None => set.iter().collect(),
+    };
+
+    for set_comb in set_filtered.into_iter().combinations(n_rand) {
         let mut comb: Vec<T> = Vec::new();
         comb.reserve_exact(n_seq);
 
